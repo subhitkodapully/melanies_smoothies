@@ -5,8 +5,6 @@ from snowflake.snowpark.functions import col
 from snowflake.snowpark.functions import when_matched
 
 import requests
-smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-st.text(smoothiefroot_response)
 
 
 cnx = st.connection("snowflake")
@@ -54,6 +52,10 @@ if ingredients_list:
     
     
     st.write("ingredients_string=" + ingredients_string)
+
+    smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+    st.text(smoothiefroot_response)
+
 
     my_insert_statement = """ insert into smoothies.public.orders(ingredients,name_on_order)
     values ('""" + ingredients_string + """','""" +name_on_order+ """') """
