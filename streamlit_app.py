@@ -69,9 +69,9 @@ st.write("my_insert_statement = " + my_insert_statement)
 
 time_to_insert = st.button('Submit Button')
 
-    if time_to_insert:
-        session.sql(my_insert_statement).collect()
-        st.success('Your smoothie is ordered!',icon="✅")        
+if time_to_insert:
+    session.sql(my_insert_statement).collect()
+    st.success('Your smoothie is ordered!',icon="✅")        
 
 #    if  ingredients_string:
 #        session.sql(my_insert_statement).collect()   
