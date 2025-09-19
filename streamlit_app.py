@@ -20,7 +20,7 @@ cnx = st.connection("snowflake")
 session = cnx.session()
 
 
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('fruit_name'),col('search_on'))
+# my_dataframe = session.table("smoothies.public.fruit_options").select(col('fruit_name'),col('search_on'))
 # st.dataframe(data=my_dataframe, width=True)
 
 # Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
