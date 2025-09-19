@@ -62,8 +62,7 @@ st.text(ingredients_list)
 
 
 
-my_insert_statement = """ insert into smoothies.public.orders(ingredients,name_on_order)
-values ('""" + ingredients_string + """','""" +name_on_order+ """') """
+my_insert_statement = """ insert into smoothies.public.orders(ingredients,name_on_order) values ('""" + ingredients_string + """','""" +name_on_order+ """') """
 
 
 st.write("my_insert_statement = " + my_insert_statement)
