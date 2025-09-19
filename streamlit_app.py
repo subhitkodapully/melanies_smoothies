@@ -63,16 +63,8 @@ if ingredients_list:
     
 # st.write(ingredients_list)
 st.text(ingredients_list)
-
-        
-
-   
-    
     
 # st.write("ingredients_string=" + ingredients_string)
-
-
-
 
 my_insert_statement = """ insert into smoothies.public.orders(ingredients,name_on_order) values ('""" + ingredients_string + """','""" +name_on_order+ """') """
 
