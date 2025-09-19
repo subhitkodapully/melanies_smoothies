@@ -37,9 +37,6 @@ pd_df = my_dataframe.to_pandas()
 name_on_order = st.text_input("Name on Smoothie:")
 st.write("The name on the smoothie will be", name_on_order)
 
-
-
-
 ingredients_list = st.multiselect(
     'Choose upto 5 ingredients:'
     ,my_dataframe
@@ -56,8 +53,8 @@ if ingredients_list:
         # st.write('The search value for ', fruit_chosen,' is ', search_on, '.')
     
         st.subheader(fruit_chosen + ' Nutrition Information')
-        fruityvice_response = requests.get("https://fruityvice.com/api/api/fruit/" + search_on)
-        fv_df = st.dataframe(data=fruityvice_response.json, use_container_width=True)
+        smoothiefruit_response = requests.get("https://fruityvice.com/api/api/fruit/" + search_on)
+        sf_df = st.dataframe(data=smoothiefruit_response.json(), use_container_width=True)
                      
         smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
         sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
