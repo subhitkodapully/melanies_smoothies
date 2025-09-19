@@ -65,7 +65,7 @@ my_insert_statement = """ insert into smoothies.public.orders(ingredients,name_o
 values ('""" + ingredients_string + """','""" +name_on_order+ """') """
 
 
-    st.write("my_insert_statement = " + my_insert_statement)
+st.write("my_insert_statement = " + my_insert_statement)
 
     time_to_insert = st.button('Submit Button')
 
