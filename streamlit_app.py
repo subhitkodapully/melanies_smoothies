@@ -6,6 +6,13 @@ from snowflake.snowpark.functions import col, when_matched
 import pandas as pd
 import requests
 
+# Write directly to the app
+st.title(f" :cup_with_straw: Customize Your Smoothies :cup_with_straw:")
+st.write(
+    """ Choose the fruits you want in your Soomthie!    
+    """
+)
+
 name_on_order = st.text_input("Name on Smoothie:")
 st.write("The name on the smoothie will be", name_on_order)
 
@@ -16,12 +23,7 @@ session = cnx.session()
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('SEARCH_ON'))
 # st.dataframe(data=my_dataframe, width=True)
 
-# Write directly to the app
-st.title(f" :cup_with_straw: Customize Your Smoothies :cup_with_straw:")
-st.write(
-    """ Choose the fruits you want in your Soomthie!    
-    """
-)
+
 
 # option = st.selectbox(
 #    "What is your favorite fruit",
