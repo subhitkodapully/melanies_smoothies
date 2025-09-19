@@ -67,7 +67,7 @@ values ('""" + ingredients_string + """','""" +name_on_order+ """') """
 
 st.write("my_insert_statement = " + my_insert_statement)
 
-    time_to_insert = st.button('Submit Button')
+time_to_insert = st.button('Submit Button')
 
     if time_to_insert:
         session.sql(my_insert_statement).collect()
