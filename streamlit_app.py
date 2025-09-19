@@ -48,8 +48,8 @@ if ingredients_list:
         smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
         sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
     
-st.write(ingredients_list[0])
-# st.text(ingredients_list)
+# st.write(ingredients_list)
+st.text(ingredients_list)
 
         
 
