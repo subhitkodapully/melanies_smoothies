@@ -40,12 +40,18 @@ pd_df = my_dataframe.to_pandas()
 # st.dataframe(pd_df)
 # st.stop()
 
-ingredients_list = st.multiselect(
-    'Choose upto 5 ingredients:'
-    ,my_dataframe
-    ,max_selections = 5
-)
+# ingredients_list = st.multiselect(
+#    'Choose upto 5 ingredients:'
+#    ,my_dataframe
+#    ,max_selections = 5
+# )
 
+ingredients_list = st.multiselect(
+    "Choose up to 5 ingredients:",
+    options=sorted(my_dataframe["FRUIT_NAME"].dropna().unique().tolist()),
+    max_selections=5,
+    key="ingredients_names",
+)
 
 # option = st.selectbox(
 #    "What is your favorite fruit",
