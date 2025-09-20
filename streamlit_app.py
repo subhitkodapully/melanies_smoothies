@@ -8,8 +8,21 @@ import requests
 st.title(f" :cup_with_straw: Customize Your Smoothies :cup_with_straw:")
 st.caption("Choose the fruits you want in your smoothie.")
 
-cnx = st.connection("snowflake")
-session = cnx.session()
+# Connection + Session (robust)
+@st.cache_resource(show_spinner="Connecting to Snowflake…")
+def get_session():
+    try:
+        conn = st.connection("snowflake", type="snowflake")  # explicit type
+        return conn.session()  # requires snowflake-snowpark-python installed
+    except Exception as e:
+        st.error(
+            "Snowflake connection failed. Check .streamlit/secrets.toml, package versions, and network access."
+        )
+        st.exception(e)
+        st.stop()
+
+session = get_session()
+
 
 
 # my_dataframe = session.table("smoothies.public.fruit_options").select(col('fruit_name'),col('search_on'))
