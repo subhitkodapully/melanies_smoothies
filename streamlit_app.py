@@ -23,6 +23,13 @@ def get_session():
 
 session = get_session()
 
+name_on_order = st.text_input("Name on Smoothie:")
+display = st.session_state.get("name_on_order", "")
+if display:
+    st.markdown(f"The name on the smoothie will be **{display}**")
+else:
+    st.caption("Enter a name above to continue.")
+
 
 
 # my_dataframe = session.table("smoothies.public.fruit_options").select(col('fruit_name'),col('search_on'))
