@@ -6,10 +6,8 @@ import requests
 
 # Write directly to the app
 st.title(f" :cup_with_straw: Customize Your Smoothies :cup_with_straw:")
-st.write(
-    """ Choose the fruits you want in your Soomthie!    
-    """
-)
+st.caption("Choose the fruits you want in your smoothie.")
+
 cnx = st.connection("snowflake")
 session = cnx.session()
 
