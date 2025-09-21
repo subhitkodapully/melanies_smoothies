@@ -103,6 +103,6 @@ if submit:
             INSERT INTO SMOOTHIES.PUBLIC.ORDERS
               (INGREDIENTS, NAME_ON_ORDER, ORDER_TS, ORDER_FILLED)
             VALUES
-              ('{ing_esc}', '{name_esc}', CURRENT_TIMESTAMP(), FALSE)
+              ('{ing_esc}', '{name_esc}', CURRENT_TIMESTAMP(), True)
         """).collect()
         st.success("Order saved.", icon="✅")
