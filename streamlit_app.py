@@ -8,7 +8,7 @@ from urllib.parse import quote
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_fruityvice(search_key: str) -> pd.DataFrame:
-    url = f"https://fruityvice.com/api/fruit/{quote(str(search_key).strip().lower())}"
+    url = f"https://my.smoothiefroot.com/api/fruit/{quote(str(search_key).strip().lower())}"
     r = requests.get(url, timeout=10)
     r.raise_for_status()
     return pd.json_normalize(r.json())
