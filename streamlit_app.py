@@ -42,13 +42,12 @@ id_to_name = dict(zip(pd_df["FRUIT_ID"], pd_df["FRUIT_NAME"]))
 # Multiselect options: boolean mask instead of .dropna()
 options = pd_df.loc[pd_df["FRUIT_ID"].notna(), "FRUIT_ID"].tolist()
 
-ingredients_list = st.multiselect(
+ingredients_ids = st.multiselect(
     "Choose up to 5 ingredients:",
-    options=sorted(my_dataframe["FRUIT_NAME"].dropna().unique().tolist()),
+    options=options,
+    format_func=lambda fid: id_to_name.get(fid, f"ID {fid}"),
     max_selections=5,
-    key="ingredients_names",
 )
-
 
 
 name_on_order = st.text_input("Name on Smoothie:")
