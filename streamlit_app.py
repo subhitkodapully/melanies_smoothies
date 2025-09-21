@@ -8,6 +8,10 @@ import requests
 st.title(f" :cup_with_straw: Customize Your Smoothies :cup_with_straw:")
 st.caption("Choose the fruits you want in your smoothie.")
 
+# Put this ABOVE any Snowflake code to force an early render
+name_on_order = st.text_input("Name on smoothie", key="order_name", placeholder="e.g., Mia S.")
+st.write("The name on the smoothie will be", name_on_order if name_on_order else "—")
+
 # Connection + Session (robust)
 @st.cache_resource(show_spinner="Connecting to Snowflake…")
 def get_session():
@@ -47,11 +51,6 @@ ingredients_ids = st.multiselect(
     format_func=lambda fid: id_to_name.get(fid, f"ID {fid}"),
     max_selections=5,
 )
-
-
-name_on_order = st.text_input("Name on Smoothie:")
-st.write("The name on the smoothie will be", name_on_order)
-
 
 
 if ingredients_list:
