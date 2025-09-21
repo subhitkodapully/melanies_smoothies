@@ -38,7 +38,7 @@ else:
 # Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
 my_dataframe = session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS").select("FRUIT_ID","FRUIT_NAME","SEARCH_ON")
 pd_df = my_dataframe.limit(1000).to_pandas()
-pd_df["FRUIT_ID"] = pd.to_numeric(menu_df["FRUIT_ID"], errors="coerce").astype("Int64")
+pd_df["FRUIT_ID"] = pd.to_numeric(pd_df["FRUIT_ID"], errors="coerce").astype("Int64")
 
 
 
