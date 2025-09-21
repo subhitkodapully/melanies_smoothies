@@ -58,7 +58,7 @@ ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
     options=pd_df["FRUIT_ID"].tolist(),        # no .dropna(); you said table has no nulls
     format_func=lambda fid: id_to_name.get(fid, f"ID {fid}"),
-    max_selections=5,
+    max_selections<=5,
 )
 
 
