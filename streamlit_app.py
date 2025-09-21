@@ -36,11 +36,11 @@ my_dataframe = session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS").select("FRUIT_ID"
 pd_df = my_dataframe.limit(1000).to_pandas()
 pd_df["FRUIT_ID"] = pd.to_numeric(pd_df["FRUIT_ID"], errors="coerce").astype("Int64")
 
-# ingredients_list = st.multiselect(
-#    'Choose upto 5 ingredients:'
-#    ,my_dataframe
-#    ,max_selections = 5
-# )
+# Stable ID → name map
+id_to_name = dict(zip(pd_df["FRUIT_ID"], menu_df["FRUIT_NAME"]))
+
+# Multiselect options: boolean mask instead of .dropna()
+options = pd_df.loc[pd_df["FRUIT_ID"].notna(), "FRUIT_ID"].tolist()
 
 ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
