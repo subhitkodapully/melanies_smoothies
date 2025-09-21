@@ -1,93 +1,108 @@
 # Import python packages
-import streamlit as st
-from snowflake.snowpark.functions import col 
-import pandas as pd
-import requests
 
-# Write directly to the app
-st.title(f" :cup_with_straw: Customize Your Smoothies :cup_with_straw:")
+import streamlit as st
+import pandas as pd
+from snowflake.snowpark.functions import col   # keep only if you'll sort with Snowpark
+import requests                                 # only needed if you call external APIs later
+from urllib.parse import quote
+
+# ----- UI header -----
+st.set_page_config(page_title="Customize Your Smoothies", page_icon="🥤")
+st.title("Customize Your Smoothies")
 st.caption("Choose the fruits you want in your smoothie.")
 
-# Put this ABOVE any Snowflake code to force an early render
-name_on_order = st.text_input("Name on smoothie", key="order_name", placeholder="e.g., Mia S.")
+# ----- Single, consistent textbox (normalized) -----
+def _normalize_name():
+    s = st.session_state.get("name_on_order", "")
+    st.session_state["name_on_order"] = " ".join(s.strip().split())
+
+name_on_order = st.text_input(
+    "Name on smoothie",
+    key="name_on_order",
+    placeholder="e.g., Mia S.",
+    on_change=_normalize_name,   # normalize on blur/Enter
+)
 st.write("The name on the smoothie will be", name_on_order if name_on_order else "—")
 
-# Connection + Session (robust)
+# ----- Connection + Session (cached) -----
 @st.cache_resource(show_spinner="Connecting to Snowflake…")
 def get_session():
-    try:
-        conn = st.connection("snowflake", type="snowflake")  # explicit type
-        return conn.session()  # requires snowflake-snowpark-python installed
-    except Exception as e:
-        st.error(
-            "Snowflake connection failed. Check .streamlit/secrets.toml, package versions, and network access."
-        )
-        st.exception(e)
-        st.stop()
+    conn = st.connection("snowflake", type="snowflake")
+    return conn.session()  # requires snowflake-snowpark-python
 
 session = get_session()
 
-name_on_order = st.text_input("Name on Smoothie:")
-display = st.session_state.get("name_on_order", "")
-if display:
-    st.markdown(f"The name on the smoothie will be **{display}**")
-else:
-    st.caption("Enter a name above to continue.")
-
-# Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
-my_dataframe = session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS").select("FRUIT_ID","FRUIT_NAME","SEARCH_ON")
-pd_df = my_dataframe.limit(1000).to_pandas()
+# ----- Load fruit options (Snowpark -> pandas) -----
+sp_df = (
+    session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS")
+           .select("FRUIT_ID", "FRUIT_NAME", "SEARCH_ON")
+           # .sort(col("FRUIT_NAME").asc())   # optional, if you want Snowflake-side sort
+           .limit(1000)
+)
+pd_df = sp_df.to_pandas()
 pd_df["FRUIT_ID"] = pd.to_numeric(pd_df["FRUIT_ID"], errors="coerce").astype("Int64")
 
-# Stable ID → name map
+# ----- Multiselect: options are IDs; UI shows names -----
 id_to_name = dict(zip(pd_df["FRUIT_ID"], pd_df["FRUIT_NAME"]))
 
-# Multiselect options: boolean mask instead of .dropna()
-options = pd_df.loc[pd_df["FRUIT_ID"].notna(), "FRUIT_ID"].tolist()
-
-ingredients_ids = st.multiselect(
+ingredients_list = st.multiselect(
     "Choose up to 5 ingredients:",
-    options=options,
+    options=pd_df["FRUIT_ID"].tolist(),        # no .dropna(); you said table has no nulls
     format_func=lambda fid: id_to_name.get(fid, f"ID {fid}"),
     max_selections=5,
 )
 
 
+ingredients_string = ""  # ensure defined even if nothing selected
+
 if ingredients_list:
-    ingredients_string = ''
+    picked_names = []
 
     for fruit_chosen in ingredients_list:
-        ingredients_string += fruit_chosen + ' '
+        # Resolve row by FRUIT_ID via loc[] (your multiselect returns IDs)
+        rows = pd_df.loc[pd_df["FRUIT_ID"].eq(fruit_chosen), ["FRUIT_NAME", "SEARCH_ON"]]
 
-        search_on=pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-        # st.write('The search value for ', fruit_chosen,' is ', search_on, '.')
-    
-        st.subheader(fruit_chosen + ' Nutrition Information')
-        smoothiefruit_response = requests.get("https://fruityvice.com/api/api/fruit/" + search_on)
-        sf_df = st.dataframe(data=smoothiefruit_response.json(), use_container_width=True)
-                     
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_container_width=True)
-        st.stop()
+        # Fallback: if someone wired the multiselect to names later
+        if rows.empty:
+            rows = pd_df.loc[pd_df["FRUIT_NAME"].astype(str).eq(str(fruit_chosen)),
+                             ["FRUIT_NAME", "SEARCH_ON"]]
 
+        if rows.empty:
+            st.warning(f"Couldn’t find row for '{fruit_chosen}'. Skipping.")
+            continue
 
-    
-# st.write(ingredients_list)
-# st.text(ingredients_list)
-    
-# st.write("ingredients_string=" + ingredients_string)
+        idx0 = rows.index[0]
+        fruit_name = str(pd_df.loc[idx0, "FRUIT_NAME"]).strip()
+        search_on  = str(pd_df.loc[idx0, "SEARCH_ON"]).strip()
 
-my_insert_statement = """ insert into smoothies.public.orders(ingredients,name_on_order) values ('""" + ingredients_string + """','""" +name_on_order+ """') """
+        picked_names.append(fruit_name)  # table is source of truth for display name
+        st.subheader(f"{fruit_name} — Nutrition Information")
 
+        try:
+            info_df = fetch_fruityvice(search_on)
+            st.dataframe(info_df, use_container_width=True)
+        except Exception as e:
+            st.error(f"Failed to fetch nutrition for “{fruit_name}”: {e}")
 
-st.write("my_insert_statement = " + my_insert_statement)
+    # Space-separated string like your original
+    ingredients_string = " ".join(picked_names)
+    st.markdown("**Ingredients:** " + ingredients_string)
 
-time_to_insert = st.button('Submit Button')
+# ----- Safe insert (no SQL string concat) -----
+submit = st.button("Submit Order")
 
-if time_to_insert:
-    session.sql(my_insert_statement).collect()
-    st.success('Your smoothie is ordered!',icon="✅")        
-
-#    if  ingredients_string:
-#        session.sql(my_insert_statement).collect()   
-#        st.success('Your smoothie is ordered!', '""" +name_on_order+ """' ,icon="✅")
+if submit:
+    if not ingredients_string or not name_on_order:
+        st.error("Please enter a name and pick at least one ingredient.")
+    else:
+        try:
+            # Create a tiny Snowpark DF and append -> avoids SQL injection/quoting issues
+            to_insert = session.create_dataframe(
+                [(ingredients_string, name_on_order)],
+                schema=["INGREDIENTS", "NAME_ON_ORDER"],
+            )
+            to_insert.write.mode("append").save_as_table("SMOOTHIES.PUBLIC.ORDERS")
+            st.success("Your smoothie is ordered!", icon="✅")
+        except Exception as e:
+            st.error("Order failed.")
+            st.exception(e)
