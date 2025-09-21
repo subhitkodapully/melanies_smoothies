@@ -6,6 +6,15 @@ from snowflake.snowpark.functions import col   # keep only if you'll sort with S
 import requests                                 # only needed if you call external APIs later
 from urllib.parse import quote
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_fruityvice(search_key: str) -> pd.DataFrame:
+    url = f"https://fruityvice.com/api/fruit/{quote(str(search_key).strip().lower())}"
+    r = requests.get(url, timeout=10)
+    r.raise_for_status()
+    return pd.json_normalize(r.json())
+
+
+
 # ----- UI header -----
 st.set_page_config(page_title="Customize Your Smoothies", page_icon="🥤")
 st.title("Customize Your Smoothies")
