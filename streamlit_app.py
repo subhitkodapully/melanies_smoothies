@@ -30,7 +30,6 @@ if display:
 else:
     st.caption("Enter a name above to continue.")
 
-
 # Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
 my_dataframe = session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS").select("FRUIT_ID","FRUIT_NAME","SEARCH_ON")
 pd_df = my_dataframe.limit(1000).to_pandas()
