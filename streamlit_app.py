@@ -91,7 +91,6 @@ if ingredients_list:
 # ----- Safe insert (no SQL string concat) -----
 submit = st.button("Submit Order")
 
-submit = st.button("Submit Order")
 if submit:
     if not ingredients_string.strip() or not name_on_order:
         st.error("Please enter a name and pick at least one ingredient.")
