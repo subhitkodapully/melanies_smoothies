@@ -101,16 +101,19 @@ if ingredients_list:
 submit = st.button("Submit Order")
 
 if submit:
-    if not ingredients_string or not name_on_order:
+    if not name_on_order or not ingredients_string:
         st.error("Please enter a name and pick at least one ingredient.")
     else:
         try:
-            # Create a tiny Snowpark DF and append -> avoids SQL injection/quoting issues
-            to_insert = session.create_dataframe(
-                [(ingredients_string, name_on_order)],
-                schema=["INGREDIENTS", "NAME_ON_ORDER"],
-            )
-            to_insert.write.mode("append").save_as_table("SMOOTHIES.PUBLIC.ORDERS")
+            # Escape single quotes to avoid SQL breaking
+            ing_esc = ingredients_string.replace("'", "''")
+            name_esc = name_on_order.replace("'", "''")
+
+            sql = f"""
+                INSERT INTO SMOOTHIES.PUBLIC.ORDERS (INGREDIENTS, NAME_ON_ORDER)
+                VALUES ('{ing_esc}', '{name_esc}')
+            """
+            session.sql(sql).collect()
             st.success("Your smoothie is ordered!", icon="✅")
         except Exception as e:
             st.error("Order failed.")
