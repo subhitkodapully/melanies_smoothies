@@ -91,21 +91,19 @@ if ingredients_list:
 # ----- Safe insert (no SQL string concat) -----
 submit = st.button("Submit Order")
 
+submit = st.button("Submit Order")
 if submit:
-    if not name_on_order or not ingredients_string:
+    if not ingredients_string.strip() or not name_on_order:
         st.error("Please enter a name and pick at least one ingredient.")
     else:
-        try:
-            # Escape single quotes to avoid SQL breaking
-            ing_esc = ingredients_string.replace("'", "''")
-            name_esc = name_on_order.replace("'", "''")
+        ing_esc  = ingredients_string.replace("'", "''")
+        name_esc = name_on_order.replace("'", "''")
 
-            sql = f"""
-                INSERT INTO SMOOTHIES.PUBLIC.ORDERS (INGREDIENTS, NAME_ON_ORDER)
-                VALUES ('{ing_esc}', '{name_esc}')
-            """
-            session.sql(sql).collect()
-            st.success("Your smoothie is ordered!", icon="✅")
-        except Exception as e:
-            st.error("Order failed.")
-            st.exception(e)
+        # Default to unfilled; we’ll update specific names next
+        session.sql(f"""
+            INSERT INTO SMOOTHIES.PUBLIC.ORDERS
+              (INGREDIENTS, NAME_ON_ORDER, ORDER_TS, ORDER_FILLED)
+            VALUES
+              ('{ing_esc}', '{name_esc}', CURRENT_TIMESTAMP(), FALSE)
+        """).collect()
+        st.success("Order saved.", icon="✅")
