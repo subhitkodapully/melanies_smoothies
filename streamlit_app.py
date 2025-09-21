@@ -66,35 +66,26 @@ ingredients_string = ""  # ensure defined even if nothing selected
 
 if ingredients_list:
     picked_names = []
-
-    for fruit_chosen in ingredients_list:
-        # Resolve row by FRUIT_ID via loc[] (your multiselect returns IDs)
-        rows = pd_df.loc[pd_df["FRUIT_ID"].eq(fruit_chosen), ["FRUIT_NAME", "SEARCH_ON"]]
-
-        # Fallback: if someone wired the multiselect to names later
+    for fruit_id in ingredients_list:
+        rows = pd_df.loc[pd_df["FRUIT_ID"].eq(fruit_id), ["FRUIT_NAME"]]
         if rows.empty:
-            rows = pd_df.loc[pd_df["FRUIT_NAME"].astype(str).eq(str(fruit_chosen)),
-                             ["FRUIT_NAME", "SEARCH_ON"]]
-
-        if rows.empty:
-            st.warning(f"Couldn’t find row for '{fruit_chosen}'. Skipping.")
             continue
+        picked_names.append(str(rows.iloc[0]["FRUIT_NAME"]).strip())
 
-        idx0 = rows.index[0]
-        fruit_name = str(pd_df.loc[idx0, "FRUIT_NAME"]).strip()
-        search_on  = str(pd_df.loc[idx0, "SEARCH_ON"]).strip()
+    ingredients_string = " ".join(picked_names) + " "  # ← trailing space on purpose
 
-        picked_names.append(fruit_name)  # table is source of truth for display name
-        st.subheader(f"{fruit_name} — Nutrition Information")
 
-        try:
-            info_df = fetch_fruityvice(search_on)
-            st.dataframe(info_df, use_container_width=True)
-        except Exception as e:
-            st.error(f"Failed to fetch nutrition for “{fruit_name}”: {e}")
+# Build space-separated names WITH a trailing space (important for HASH match)
+ingredients_string = ""
+if ingredients_list:
+    picked_names = []
+    for fruit_id in ingredients_list:
+        rows = pd_df.loc[pd_df["FRUIT_ID"].eq(fruit_id), ["FRUIT_NAME"]]
+        if rows.empty:
+            continue
+        picked_names.append(str(rows.iloc[0]["FRUIT_NAME"]).strip())
 
-    # Space-separated string like your original
-    ingredients_string = " ".join(picked_names)
+    ingredients_string = " ".join(picked_names) + " "  # ← trailing space on purpose
     st.markdown("**Ingredients:** " + ingredients_string)
 
 # ----- Safe insert (no SQL string concat) -----
