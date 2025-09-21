@@ -36,7 +36,12 @@ else:
 # st.dataframe(data=my_dataframe, width=True)
 
 # Convert the Snowpark Dataframe to a Pandas Dataframe so we can use the LOC function
-pd_df = my_dataframe.to_pandas()
+
+my_dataframe = session.table("SMOOTHIES.PUBLIC.FRUIT_OPTIONS").select("FRUIT_ID","FRUIT_NAME","SEARCH_ON")
+pd_df = my_dataframe.limit(1000).to_pandas()
+
+
+# pd_df = my_dataframe.to_pandas()
 # st.dataframe(pd_df)
 # st.stop()
 
